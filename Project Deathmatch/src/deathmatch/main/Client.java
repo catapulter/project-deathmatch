@@ -85,7 +85,7 @@ public class Client
 		try {
 			sendSocket = new DatagramSocket();
 			sendSocket.connect(serverIP, serverPort);
-			sendData = new String("NC" + Integer.toString(receivePort)).getBytes();
+			sendData = new String(Integer.toString(receivePort)).getBytes();
 			System.out.println("Sending : " + sendData);
 			DatagramPacket packet = new DatagramPacket(sendData, sendData.length, serverIP, serverPort);
 			sendSocket.send(packet);
