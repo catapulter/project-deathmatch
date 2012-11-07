@@ -73,7 +73,8 @@ public class Client
 		try {
 			receiveSocket = new DatagramSocket();
 			receivePort = receiveSocket.getLocalPort();
-			Thread ReceiveThread = new Thread(new ReceiveThread(receiveSocket));
+			Thread receiveThread = new Thread(new ReceiveThread(receiveSocket));
+			receiveThread.start();
 		} catch (SocketException e) {
 			System.out.println("Error establishing recieveSocket.");
 			System.exit(0);
@@ -86,7 +87,7 @@ public class Client
 			sendSocket = new DatagramSocket();
 			sendSocket.connect(serverIP, serverPort);
 			sendData = new String(Integer.toString(receivePort)).getBytes();
-			System.out.println("Sending : " + sendData);
+			System.out.println("Sending : " + receivePort);
 			DatagramPacket packet = new DatagramPacket(sendData, sendData.length, serverIP, serverPort);
 			sendSocket.send(packet);
 			System.out.println("Sent.");
@@ -102,10 +103,6 @@ public class Client
 		canvas.setBounds(0, 0, screenWidth, screenHeight);
 		canvas.setBackground(Color.black);
 		canvas.setVisible(true);
-		canvas.addNotify();
-		canvas.createBufferStrategy(2);
-        buffer = canvas.getBufferStrategy();
-        canvas.requestFocus();
 		
 		// Initialize JFrame object
 		frame = new JFrame("Project Deathmatch ~ Alpha");
@@ -126,22 +123,22 @@ public class Client
             }catch(Exception e){e.printStackTrace();}
         }
         
-        // Add canvas to the frame
+        // Add canvas to the frame and create buffer strategy
         frame.add(canvas);
+		canvas.createBufferStrategy(2);
+        buffer = canvas.getBufferStrategy();
+        canvas.requestFocus();
 		
 		// Add action listeners to Client
         canvas.addMouseListener(this);
         canvas.addMouseMotionListener(this);
         canvas.addKeyListener(this);
-				
         
 		// Graphics manipulation loop
         
 		
 		
 	}// start()
-	
-	
 	
 	
 	
@@ -179,6 +176,15 @@ public class Client
 		}
 	}
 	
+	/* loadMap(String filename)
+	 *  Description - Loads a map give the string filename
+	 */
+	private Map loadMap(String filename) {
+		
+		// TODO Write code to read in map file
+		return new Map(filename);
+	}
+	
 	// THREAD CLASSES
 	
 	private class ReceiveThread
@@ -186,6 +192,7 @@ public class Client
 		
 		byte[] receiveData = new byte[1024];
 		DatagramSocket clientSocket;
+		String received, state = "start";
 		
 		public ReceiveThread(DatagramSocket receiveSocket) {
 			
@@ -198,8 +205,14 @@ public class Client
 				while(true) {
 					DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 					clientSocket.receive(receivePacket);
-					String sentence = new String(receivePacket.getData());
-	                System.out.println("RECEIVED: " + sentence);
+					received = new String(receivePacket.getData());
+
+					if(state.equals("start")) {
+						// Load map name received
+						synchronized(map) {
+							map = loadMap("./map/" + received);
+						}
+					}
 				}
 			} catch (SocketException e) {
 				System.out.println("Unable to open a socket connection on specified port number.");
