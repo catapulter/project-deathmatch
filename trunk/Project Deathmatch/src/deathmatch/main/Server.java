@@ -1,6 +1,8 @@
 package deathmatch.main;
 
 import java.awt.Canvas;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,7 +14,7 @@ import java.util.Scanner;
 public class Server {
 
 	// Class variables
-	int maxPlayers;
+	int maxPlayers; //max number of players for selected map
 	HashMap<String, Integer> pendingClientList;  //Key: IPaddress:Port   Value: ReplyPort
 													//Holds Pending Clients that are loading the map
 	HashMap<String, Integer> clientList;  //Key: IPaddress:Port   Value: ReplyPort
@@ -34,8 +36,12 @@ public class Server {
 	 *  Description - Called at the start of the program
 	 */
 	public void start() {
-		
-		serverSetup();
+		String[] mapList = getMaps();
+		if(mapList == null){
+			System.out.println("Unable to find maps.");
+			System.exit(0);
+		}
+		serverSetup(mapList);
 		// Start the receive thread
 		Thread receiveThread = new Thread(new ReceiveThread());
 		receiveThread.start();
@@ -54,27 +60,45 @@ public class Server {
 	
 	
 	// PRIVATE METHODS
+	private String[] getMaps(){
+		String FILE_DIR = "\\Images\\Maps";
+		FilenameFilter extFilter = new FilenameFilter() {
+			public boolean accept(File directory, String fileName) {
+			    return fileName.endsWith(".png");
+			}
+			};
+		File mapDir = new File(FILE_DIR);
+		if(mapDir.isDirectory()==false){
+			System.out.println("Directory does not exists : " + FILE_DIR);
+			return null;
+		}
+		String[] list = mapDir.list(extFilter);
+		 
+		if (list.length == 0) {
+			System.out.println("no files end with : " + extFilter);
+			return null;
+		}
+		return list;
+	}
 
-	private void serverSetup(){
-		System.out.print("Choose a map:\n" +
-							"	1 - Test\n" +
-							"	2 - Default\n" +
-							"	0 - Quit\n" +
-							"> ");
+	private void serverSetup(String[] mapListPR){
+		System.out.println("Choose a map:");
+		for(int x = 0; x < mapListPR.length; x++){
+			System.out.println(x+1 + " - " + mapListPR[x]);
+		}
 		Scanner readIn = new Scanner(System.in);
-		readIn.nextInt();
-		if(readIn.equals(1)){
-			
+		int mapInt = readIn.nextInt();
+		if(mapInt==1){
+			//Test map is chosen
 		}
-		else if(readIn.equals(2)){
-			
-		}
-		else if(readIn.equals(0)){
+		else if(mapInt == 0){
 			System.exit(0);
 		}
 		readIn.close();
 		
 	}//serverSetup()
+	
+	
 	// THREAD CLASSES
 	
 	private class ReceiveThread
@@ -91,11 +115,15 @@ public class Server {
 				
 				while(true) {
 					
-					System.out.println("Waiting to receive...");
+					//Debug
+						System.out.println("Waiting to receive...");
+						
 					DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 					serverSocket.receive(receivePacket);
 					String sentence = new String(receivePacket.getData());
-	                System.out.println("RECEIVED: " + sentence);
+					
+	                //Debug
+						System.out.println("RECEIVED: " + sentence);
 	                
 	                
 	                if(clientList.get(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort())) != null){
