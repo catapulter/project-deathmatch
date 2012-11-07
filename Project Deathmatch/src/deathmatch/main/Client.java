@@ -1,8 +1,18 @@
 package deathmatch.main;
 
 import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.DisplayMode;
+import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferStrategy;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -12,13 +22,27 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 
-public class Client {
+import javax.swing.JFrame;
+
+public class Client 
+		implements KeyListener,
+		MouseListener,
+		MouseMotionListener{
 
 	// Class variables
+    private JFrame frame;
+    static GraphicsDevice graphicsDevice;
+    static DisplayMode newDisplayMode;
+    
 	private Canvas canvas;
+	private BufferStrategy buffer;
+    private Graphics2D graphics;
+	private int screenWidth, screenHeight;
+	
 	private String gameMode;
 	private ArrayList<Entity> entities;
 	private Map map;
+	private int mapWidth, mapHeight;
 	
 	private InetAddress serverIP;
 	private int serverPort;
@@ -72,7 +96,53 @@ public class Client {
 			e.printStackTrace();
 		}
 		
+		// Initialize Canvas object
+		canvas = new Canvas();
+		canvas.setIgnoreRepaint(true);
+		canvas.setBounds(0, 0, screenWidth, screenHeight);
+		canvas.setBackground(Color.black);
+		canvas.setVisible(true);
+		canvas.addNotify();
+		canvas.createBufferStrategy(2);
+        buffer = canvas.getBufferStrategy();
+        canvas.requestFocus();
+		
+		// Initialize JFrame object
+		frame = new JFrame("Project Deathmatch ~ Alpha");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setUndecorated(true);
+        frame.setIgnoreRepaint(true);
+        frame.setVisible(true);
+        graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        newDisplayMode = new DisplayMode(screenWidth, screenHeight, 32, 60);
+        if(graphicsDevice.isFullScreenSupported()) {
+            try {
+                graphicsDevice.setFullScreenWindow(frame);
+            }catch(Exception e){e.printStackTrace();}
+        }
+        if(graphicsDevice.isDisplayChangeSupported()) {
+            try {
+                graphicsDevice.setDisplayMode(newDisplayMode);
+            }catch(Exception e){e.printStackTrace();}
+        }
+        
+        // Add canvas to the frame
+        frame.add(canvas);
+		
+		// Add action listeners to Client
+        canvas.addMouseListener(this);
+        canvas.addMouseMotionListener(this);
+        canvas.addKeyListener(this);
+				
+        
+		// Graphics manipulation loop
+        
+		
+		
 	}// start()
+	
+	
+	
 	
 	
 	// PRIVATE METHODS
@@ -97,18 +167,21 @@ public class Client {
                 	serverPort = Integer.parseInt(sa[1].trim());
                 	System.out.println("Server IP = " + serverIP);
                 	System.out.println("Server Port = " + serverPort);
+                } else if(sa[0].trim().equals("resolution")) {
+                	sa = sa[1].split("x");
+                	screenWidth = Integer.parseInt(sa[0].trim());
+                	screenHeight = Integer.parseInt(sa[1].trim());
                 }
             }
 		} catch (Exception e) {
 			System.out.println("Could not load config file.");
 			System.exit(0);
 		}
-		
 	}
 	
 	// THREAD CLASSES
 	
-	private static class ReceiveThread
+	private class ReceiveThread
 		implements Runnable {
 		
 		byte[] receiveData = new byte[1024];
@@ -134,14 +207,12 @@ public class Client {
 			} catch (IOException e) {
 				System.out.println("Unable to receive packet.");
 			}
-			
 		}
 	}
 	
+	/*private class SendThread
+	implements Runnable {
 	
-	/*private static class SendThread
-		implements Runnable {
-		
 	    byte[] sendData = new byte[1024];
 	    DatagramSocket clientSocket;
 	    
@@ -171,5 +242,67 @@ public class Client {
 			
 		}
 	}*/
+
+	// ACTION LISTENERS
+	
+	@Override
+	public void mouseDragged(MouseEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyPressed(KeyEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }
