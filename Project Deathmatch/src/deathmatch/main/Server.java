@@ -1,6 +1,5 @@
 package deathmatch.main;
 
-import java.awt.Canvas;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -16,6 +15,7 @@ public class Server {
 	// Class variables
 	int maxPlayers; //max number of players for selected map
 	String nextMap; //next map that the server will change to / broadcast to clients
+	ArrayList<String> classList; // list of available character classes
 	HashMap<String, Integer> pendingClientList;  //Key: IPaddress:Port   Value: ReplyPort
 													//Holds Pending Clients that are loading the map
 	HashMap<String, Integer> clientList;  //Key: IPaddress:Port   Value: ReplyPort
@@ -42,7 +42,7 @@ public class Server {
 		clientList = new HashMap<String, Integer>();
 		pendingClientList = new HashMap<String, Integer>();
 		playerList = new HashMap<String, Point>();
-		
+		classList = new ArrayList<String>();
 		//Get the list of available maps 
 		String[] mapList = getMaps();
 		if(mapList == null){
@@ -50,11 +50,11 @@ public class Server {
 			System.exit(0);
 		}
 		//Get the list of available character classes
-		//String[] classList = getClasses();
-		//if(classList == null){
-		//	System.out.println("Unable to find character classes.");
-		//	System.exit(0);
-		//}
+		getClasses();
+		if(classList == null){
+			System.out.println("Unable to find character classes.");
+			System.exit(0);
+		}
 		//get the next map from the server
 		serverSetup(mapList);
 		// Start the receive thread
@@ -109,7 +109,7 @@ public class Server {
 	 * DESCRIPTIONS - getClasses
 	 * Returns a list of all classes from the classes folder
 	 */
-	private String[] getClasses(){
+	private void getClasses(){
 		String FILE_DIR = ".\\classes";
 		FilenameFilter extFilter = new FilenameFilter() {
 			public boolean accept(File directory, String fileName) {
@@ -119,20 +119,19 @@ public class Server {
 		File mapDir = new File(FILE_DIR);
 		if(mapDir.isDirectory()==false){
 			System.out.println("Directory does not exists : " + FILE_DIR);
-			return null;
+			System.exit(0);
 		}
 		String[] list = mapDir.list(extFilter);
 		
 		if (list.length == 0) {
 			System.out.println("no files end with : " + extFilter);
-			return null;
+			System.exit(0);
 		}
 		else {
 			for(int x = 0; x < list.length;x++){
-				list[x] = list[x].substring(0, list[x].indexOf("."));
+				classList.add(list[x].substring(0, list[x].indexOf(".")));
 			}
 		}
-		return list;
 	}
 	
 	/**********************
@@ -199,7 +198,7 @@ public class Server {
 	                	
 	                	String[] sa = sentence.split(":");
 	                	
-	                	if(sa.length == 2){ //TODO check for valid class names
+	                	if(sa.length == 2 && classList.contains(sa[1])){
 	                		clientList.put(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort()), pendingClientList.get(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort())));
 	                		pendingClientList.remove(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort()));
 	                	}
