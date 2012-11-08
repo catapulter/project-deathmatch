@@ -6,10 +6,14 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Server {
 
@@ -18,6 +22,7 @@ public class Server {
 	String nextMap; //next map that the server will change to / broadcast to clients
 	ArrayList<String> classList; // list of available character classes
 	ArrayList<String> mapList; // list of available maps
+	HashMap<String, Boolean> satisfiedPendingClientList;
 	HashMap<String, Integer> pendingClientList;  //Key: IPaddress:Port   Value: ReplyPort
 													//Holds Pending Clients that are loading the map
 	HashMap<String, Integer> clientList;  //Key: IPaddress:Port   Value: ReplyPort
@@ -42,6 +47,7 @@ public class Server {
 	public void start() {
 		//Initialize HashMaps
 		clientList = new HashMap<String, Integer>();
+		satisfiedPendingClientList = new HashMap<String, Boolean>();
 		pendingClientList = new HashMap<String, Integer>();
 		playerList = new HashMap<String, Point>();
 		classList = new ArrayList<String>();
@@ -184,32 +190,34 @@ public class Server {
 					DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 					serverSocket.receive(receivePacket);
 					String sentence = new String(receivePacket.getData());
-					
+					String temp[] = receivePacket.getAddress().toString().split("/");
+					String packetAddress = temp[1];
+					System.out.println(packetAddress);
 	                //Debug
 					System.out.println("RECEIVED: " + sentence);
 	                
 	                //Game State
 					//Moves to Stop Connection State when TC is sent from client
-	                if(clientList.get(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort())) != null){
+	                if(clientList.get(packetAddress+":"+Integer.toString(receivePacket.getPort())) != null){
 	                	//Packet is from client currently playing
 	                	
 	                	//Stop Connection State
 	                	//Removes client from list
 	                	if(sentence.equals("TC")){
 	                		// Terminate Connection from client
-	                		clientList.remove(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort()));
+	                		clientList.remove(packetAddress+":"+Integer.toString(receivePacket.getPort()));
 	                	}	
 	                }
 	                //Init State
 	                //Moves to Game State when clients send playerName:className
-	                else if(pendingClientList.get(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort())) != null){
+	                else if(pendingClientList.get(packetAddress+":"+Integer.toString(receivePacket.getPort())) != null){
 	                	//Packet is from pending client loading the game.
 	                	
 	                	String[] sa = sentence.split(":");
 	                	
 	                	if(sa.length == 2 && classList.contains(sa[1])){
-	                		clientList.put(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort()), pendingClientList.get(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort())));
-	                		pendingClientList.remove(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort()));
+	                		clientList.put(packetAddress+":"+Integer.toString(receivePacket.getPort()), pendingClientList.get(packetAddress+":"+Integer.toString(receivePacket.getPort())));
+	                		pendingClientList.remove(packetAddress+":"+Integer.toString(receivePacket.getPort()));
 	                	}
 	                }
 	                //NC State
@@ -218,7 +226,7 @@ public class Server {
 	                	//Packet is from unknown client
 	                	//check if packet is a port number
                 		int replyPort = Integer.parseInt(sentence.trim());
-                		pendingClientList.put(receivePacket.getAddress().toString()+Integer.toString(receivePacket.getPort()), replyPort);
+                		pendingClientList.put(packetAddress+":"+Integer.toString(receivePacket.getPort()), replyPort);
 	                }
 				}
 			} catch (SocketException e) {
@@ -237,10 +245,55 @@ public class Server {
 	private class SendThread
 		implements Runnable {
 		
-        byte[] sendData = new byte[1024];
+       
 		
 		public void run() {
-			
+			byte[] sendData = new byte[1024];
+			DatagramSocket sendSocket;
+			Set keys;
+			Iterator iter;
+			while(true){
+				keys = pendingClientList.keySet();
+				iter = keys.iterator();
+				//Send Pulse to pendingClientList clients who have not received the map
+				//Iterates through the pendingClientList 
+				//    if client has not been satisfied with a send, then send the client the map
+				//
+				while(iter.hasNext()){
+					Object o = iter.next();
+					//System.out.println("Start Sending...");
+					if(satisfiedPendingClientList.containsKey(o.toString())!= true){
+						try {
+							sendData = new byte[1024];
+							int sendPort = pendingClientList.get(o);
+							sendSocket = new DatagramSocket();
+							String comboString[] = o.toString().split(":");
+							InetAddress clientIP = InetAddress.getByName(comboString[0]);
+							sendSocket.connect(clientIP, sendPort);
+							sendData = new String("MP:"+nextMap).getBytes();
+							System.out.println("Sending : " + sendPort);
+							DatagramPacket packet = new DatagramPacket(sendData, sendData.length, clientIP, sendPort);
+							sendSocket.send(packet);
+							//System.out.println("Sent.");
+							satisfiedPendingClientList.put(o.toString(), true);
+							sendSocket.close();
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}	
+					}
+				}
+				
+				//TODO Send Pulse to clientList clients containing entity information
+				
+				
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e2) {
+					e2.printStackTrace();
+				}
+			}
 		}
 	}
 }

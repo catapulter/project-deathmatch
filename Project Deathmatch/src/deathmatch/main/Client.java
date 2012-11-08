@@ -200,17 +200,17 @@ public class Client
 		}
 		
 		public void run() {
-			
+			System.out.println("Waiting to receive...");
 			try {
 				while(true) {
 					DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 					clientSocket.receive(receivePacket);
 					received = new String(receivePacket.getData());
-
+					System.out.println("Received " + received.toString());
 					if(state.equals("start")) {
 						// Load map name received
 						synchronized(map) {
-							map = loadMap("./map/" + received);
+							map = loadMap(received + ".map");
 						}
 					}
 				}
