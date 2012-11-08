@@ -1,5 +1,5 @@
-mapImage = Test.png
-mapTopImage = TestTop.png
+mapImage = test_bot.png
+mapTopImage = test_top.png
 miniMapImage = TestMini.png
 thumbnail = TestThumbnail.png
 recommendedPlayers = 3
