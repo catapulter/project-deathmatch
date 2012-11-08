@@ -3,6 +3,7 @@ package deathmatch.main;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -16,6 +17,7 @@ public class Server {
 	int maxPlayers; //max number of players for selected map
 	String nextMap; //next map that the server will change to / broadcast to clients
 	ArrayList<String> classList; // list of available character classes
+	ArrayList<String> mapList; // list of available maps
 	HashMap<String, Integer> pendingClientList;  //Key: IPaddress:Port   Value: ReplyPort
 													//Holds Pending Clients that are loading the map
 	HashMap<String, Integer> clientList;  //Key: IPaddress:Port   Value: ReplyPort
@@ -43,8 +45,10 @@ public class Server {
 		pendingClientList = new HashMap<String, Integer>();
 		playerList = new HashMap<String, Point>();
 		classList = new ArrayList<String>();
+		mapList = new ArrayList<String>();
+		
 		//Get the list of available maps 
-		String[] mapList = getMaps();
+		getMaps();
 		if(mapList == null){
 			System.out.println("Unable to find maps.");
 			System.exit(0);
@@ -56,7 +60,7 @@ public class Server {
 			System.exit(0);
 		}
 		//get the next map from the server
-		serverSetup(mapList);
+		serverSetup();
 		// Start the receive thread
 		Thread receiveThread = new Thread(new ReceiveThread());
 		receiveThread.start();
@@ -99,7 +103,7 @@ public class Server {
 		}
 		else {
 			for(int x = 0; x < list.length;x++){
-				list[x] = list[x].substring(0, list[x].indexOf("."));
+				mapList.add(list[x].substring(0, list[x].indexOf(".")));
 			}
 		}
 		return list;
@@ -140,14 +144,19 @@ public class Server {
 	 * after displaying all available maps. 
 	 * @param mapListPR
 	 */
-	private void serverSetup(String[] mapListPR){
+	private void serverSetup(){
 		System.out.println("Choose a map:");
-		for(int x = 0; x < mapListPR.length; x++){
-			System.out.println(mapListPR[x]);
+		for(int x = 0; x < mapList.size(); x++){
+			System.out.println(mapList.get(x));
 		}
-		System.out.print("Enter map:");
+		System.out.print("Enter map name: ");
 		Scanner readIn = new Scanner(System.in);
-		nextMap = readIn.next();
+		while(true){
+			nextMap = readIn.next();
+			if(mapList.contains(nextMap)) break;
+			System.out.println("Invalid map name.");
+			System.out.print("Enter map name: ");
+		}
 		readIn.close();
 		
 	}//serverSetup()
@@ -231,7 +240,6 @@ public class Server {
         byte[] sendData = new byte[1024];
 		
 		public void run() {
-			
 			
 		}
 	}
