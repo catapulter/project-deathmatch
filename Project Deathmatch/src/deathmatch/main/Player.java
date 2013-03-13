@@ -30,6 +30,8 @@ public class Player extends Entity {
 	public void setCurrentArmor(int x){ currentArmor = x;}
 	public int getCurrentSpeed(){ return currentSpeed;}
 	public void setCurrentSpeed(int x){ currentSpeed = x;}
+	public String getName(){return name;}
+	public PlayerClass getPlayerClass(){return playerClass;}
 	//Need buff stuff here
 	
 	
