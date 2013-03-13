@@ -29,6 +29,7 @@ public class Server {
 											//Holds Clients who are currently playing
 	private LinkedBlockingQueue<DatagramPacket> receiveMessages;
 	private PlayerClass archer, cleric, mage, warrior;
+	private Map map;
 	
 	// Server Socket thingy
 	private DatagramSocket socket;
@@ -95,6 +96,8 @@ public class Server {
 			        	String[] sa = sentence.split(":");
 			        	
 			        	if(sa.length == 2 && classList.contains(sa[1])){
+			        		System.out.println("Player Name: " + sa[0]);
+			        		System.out.println("Class Type: " + sa[1]);
 			        		PlayerClass newPlayerClass = null;
 			        		if(sa[1].equals("archer")) newPlayerClass = archer;
 			        		else if(sa[1].equals("mage")) newPlayerClass = mage;
@@ -246,10 +249,16 @@ public class Server {
 			System.out.print("Enter map name: ");
 		}
 		readIn.close();
-		
+		map = loadMap(nextMap + ".map");
+		System.out.println("Width of map: " + Integer.toString(map.getWidth()));
+		System.out.println("Height of map: " + Integer.toString(map.getHeight()));
 	}//serverSetup()
 	
-	
+	private Map loadMap(String filename) {
+		
+		// TODO Write code to read in map file
+		return new Map(filename);
+	}
 	// THREAD CLASSES
 	
 	private class ReceiveThread
