@@ -36,7 +36,7 @@ public class Client
     static DisplayMode newDisplayMode;
     
 	private Canvas canvas;
-	private BufferStrategy buffer;
+	private BufferStrategy strategy;
     private Graphics2D graphics;
 	private int screenWidth, screenHeight;
 	
@@ -249,9 +249,9 @@ public class Client
         // Add canvas to the frame and create buffer strategy
         frame.add(canvas);
 		canvas.createBufferStrategy(2);
-        buffer = canvas.getBufferStrategy();
+        strategy = canvas.getBufferStrategy();
         canvas.requestFocus();
-		graphics = (Graphics2D) canvas.getGraphics();
+		graphics = (Graphics2D) strategy.getDrawGraphics();
 		
 		// Add action listeners to Client
         canvas.addMouseListener(this);
