@@ -160,7 +160,7 @@ public class Client
 				
 				g.dispose();
 				strategy.show();
-				state = "FUCK";
+//				state = "FUCK";
 	        }
 			
 		}
@@ -243,20 +243,20 @@ public class Client
 		// Initialize JFrame object
 		frame = new JFrame("Project Deathmatch ~ Alpha");
 		
-		frame.setSize(800,800);
+//		frame.setSize(800,800);
 		
 //        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.setUndecorated(true);
+        frame.setUndecorated(true);
         frame.setIgnoreRepaint(true);
         frame.setVisible(true);
-//        graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-//        newDisplayMode = new DisplayMode(screenWidth, screenHeight, 32, 60);
-//        if(graphicsDevice.isFullScreenSupported()) {
-//            try {
-//                graphicsDevice.setFullScreenWindow(frame);
-//            }catch(Exception e){e.printStackTrace();}
-//        }
+        graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        newDisplayMode = new DisplayMode(screenWidth, screenHeight, 32, 60);
+        if(graphicsDevice.isFullScreenSupported()) {
+            try {
+                graphicsDevice.setFullScreenWindow(frame);
+            }catch(Exception e){e.printStackTrace();}
+        }
 //        if(graphicsDevice.isDisplayChangeSupported()) {
 //            try {
 //                graphicsDevice.setDisplayMode(newDisplayMode);
