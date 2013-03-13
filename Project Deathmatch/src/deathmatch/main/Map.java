@@ -69,6 +69,12 @@ public class Map {
 	public String getMapName(){
 		return mapName;
 	}
+	public int getWidth(){
+		return mapImage.getWidth(null);
+	}
+	public int getHeight(){
+		return mapImage.getHeight(null);
+	}
 	
 //	    ____                         __  ___     __  __              __    
 //	   / __ \_________ __      __   /  |/  /__  / /_/ /_  ____  ____/ /____
