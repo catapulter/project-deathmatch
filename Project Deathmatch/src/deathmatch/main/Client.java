@@ -67,11 +67,11 @@ public class Client
 	 */
 	public void start() {
 		
-		// Initialize variables
-		initialize();
-		
 		// Load configuration file
 		loadConfig("config.cfg");
+		
+		// Initialize variables
+		initialize();
 		
 		// start server receive thread
 		Thread receiveThread = new Thread(new ReceiveThread());
