@@ -17,6 +17,10 @@ public class PlayerClass {
 		
 	}
 	
+	public String getClassType() {
+		return classType;
+	}
+	
 	public int getHealth() {
 		return health;
 	}
@@ -50,13 +54,14 @@ public class PlayerClass {
 				if(sa[0].equals("type")) {
 					playerClass.classType = br.readLine().trim();
 				} else if(sa[0].equals("health")) {
-					playerClass.health = Integer.parseInt(br.readLine().split("=")[1].trim());
+					playerClass.health = Integer.parseInt(sa[1]);
+					System.out.println(playerClass.health);
 				} else if(sa[0].equals("energy")) {
-					playerClass.energy = Integer.parseInt(br.readLine().split("=")[1].trim());
+					playerClass.energy = Integer.parseInt(sa[1]);
 				} else if(sa[0].equals("armor")) {
-					playerClass.armor = Integer.parseInt(br.readLine().split("=")[1].trim());
+					playerClass.armor = Integer.parseInt(sa[1]);
 				} else if(sa[0].equals("speed")) {
-					playerClass.speed = Integer.parseInt(br.readLine().split("=")[1].trim());
+					playerClass.speed = Integer.parseInt(sa[1]);
 				}
 			}
 			

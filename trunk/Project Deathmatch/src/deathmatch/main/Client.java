@@ -70,13 +70,15 @@ public class Client
 	 */
 	public void start() {
 		
-		// Load configuration file
-		loadConfig("config.cfg");
-		
 		// Initialize variables
 		initialize();
 		
+		// Load configuration file
+		loadConfig("config.cfg");
+		
+		
 		// start server receive thread
+		socket.connect(serverIP, serverPort);
 		Thread receiveThread = new Thread(new ReceiveThread());
 		receiveThread.start();
 		
@@ -111,6 +113,7 @@ public class Client
 			if(!receivedMessages.isEmpty()) {
 				
 				packet = receivedMessages.poll();
+				DatagramPacket sendPacket;
 				message = new String(packet.getData());
 				
 				if(state.equals("map")) {
@@ -120,14 +123,32 @@ public class Client
 					
 					// TODO
 					// Just send a name and playerClass
+					sendData = new String(player.getName() + ":" + player.getPlayerClass().getClassType()).getBytes();
+					sendPacket = new DatagramPacket(sendData, sendData.length, serverIP, serverPort);
+					try {
+						socket.send(sendPacket);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					
+					state = "name";
+				
+				} else if(state.equals("name")) {
+					
+					
 					
 				}
 			}
 			
 			
 			
-	        
-			// Graphics manipulation loop
+	        if(state.equals("game")) {
+				// Graphics manipulation loop
+				map.drawBottom(graphics, 0, 0);
+				
+				map.drawTop(graphics, 0, 0);
+	        }
+			
 		}
 		
 		
@@ -178,6 +199,7 @@ public class Client
             }
 		} catch (Exception e) {
 			System.out.println("Could not load config file.");
+			e.printStackTrace();
 			System.exit(0);
 		}
 	}
@@ -197,7 +219,6 @@ public class Client
 			System.out.println("Unable to open socket.");
 			e.printStackTrace();
 		}
-		socket.connect(serverIP, serverPort);
 		
 		// Initialize Canvas object
 		canvas = new Canvas();
@@ -230,6 +251,7 @@ public class Client
 		canvas.createBufferStrategy(2);
         buffer = canvas.getBufferStrategy();
         canvas.requestFocus();
+		graphics = (Graphics2D) canvas.getGraphics();
 		
 		// Add action listeners to Client
         canvas.addMouseListener(this);
