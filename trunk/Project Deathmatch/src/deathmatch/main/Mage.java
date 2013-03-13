@@ -1,5 +1,5 @@
 package deathmatch.main;
 
-public class Mage extends Class {
+public class Mage extends PlayerClass {
 
 }

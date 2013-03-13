@@ -21,6 +21,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JFrame;
 
@@ -47,7 +48,9 @@ public class Client
 	private InetAddress serverIP;
 	private int serverPort;
 	
-	private DatagramSocket sendSocket;
+	private DatagramSocket socket;
+	private LinkedBlockingQueue<DatagramPacket> receivedMessages;
+	private String state;
 	
 	// CONSTRUCTORS
 	
@@ -64,78 +67,61 @@ public class Client
 	 */
 	public void start() {
 		
+		// Initialize variables
+		initialize();
+		
 		// Load configuration file
 		loadConfig("config.cfg");
-				
-		// start server receive thread
-		int receivePort = 0;
-		DatagramSocket receiveSocket;
-		try {
-			receiveSocket = new DatagramSocket();
-			receivePort = receiveSocket.getLocalPort();
-			Thread receiveThread = new Thread(new ReceiveThread(receiveSocket));
-			receiveThread.start();
-		} catch (SocketException e) {
-			System.out.println("Error establishing recieveSocket.");
-			System.exit(0);
-		}
 		
-		// establish connection
+		// start server receive thread
+		Thread receiveThread = new Thread(new ReceiveThread());
+		receiveThread.start();
 		
 		byte[] sendData;
-		try {
-			sendSocket = new DatagramSocket();
-			sendSocket.connect(serverIP, serverPort);
-			sendData = new String(Integer.toString(receivePort)).getBytes();
-			System.out.println("Sending : " + receivePort);
-			DatagramPacket packet = new DatagramPacket(sendData, sendData.length, serverIP, serverPort);
-			sendSocket.send(packet);
-			System.out.println("Sent.");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		
+		// establish connection
+		if(state.equals("new")) {
+			try {
+				sendData = new String("NC").getBytes();
+				DatagramPacket packet = new DatagramPacket(sendData, sendData.length, serverIP, serverPort);
+				socket.send(packet);
+				
+				// Debugging Code
+				System.out.println("Sent.");
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			state = "map";
 		}
+						
+		// Loop variables
+		DatagramPacket packet;
+		String message;
 		
-		// Initialize Canvas object
-		canvas = new Canvas();
-		canvas.setIgnoreRepaint(true);
-		canvas.setBounds(0, 0, screenWidth, screenHeight);
-		canvas.setBackground(Color.black);
-		canvas.setVisible(true);
-		
-		// Initialize JFrame object
-		frame = new JFrame("Project Deathmatch ~ Alpha");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setUndecorated(true);
-        frame.setIgnoreRepaint(true);
-        frame.setVisible(true);
-        graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        newDisplayMode = new DisplayMode(screenWidth, screenHeight, 32, 60);
-        if(graphicsDevice.isFullScreenSupported()) {
-            try {
-                graphicsDevice.setFullScreenWindow(frame);
-            }catch(Exception e){e.printStackTrace();}
-        }
-        if(graphicsDevice.isDisplayChangeSupported()) {
-            try {
-                graphicsDevice.setDisplayMode(newDisplayMode);
-            }catch(Exception e){e.printStackTrace();}
-        }
-        
-        // Add canvas to the frame and create buffer strategy
-        frame.add(canvas);
-		canvas.createBufferStrategy(2);
-        buffer = canvas.getBufferStrategy();
-        canvas.requestFocus();
-		
-		// Add action listeners to Client
-        canvas.addMouseListener(this);
-        canvas.addMouseMotionListener(this);
-        canvas.addKeyListener(this);
-        
-		// Graphics manipulation loop
-        
+		while (true) {
+			
+			// Check if there are messages to process
+			if(!receivedMessages.isEmpty()) {
+				
+				packet = receivedMessages.poll();
+				message = new String(packet.getData());
+				
+				if(state.equals("map")) {
+					
+					map = loadMap(message.split(":")[1].trim());
+					
+					
+				}
+			}
+			
+			
+			
+	        
+			// Graphics manipulation loop
+		}
 		
 		
 	}// start()
@@ -176,6 +162,61 @@ public class Client
 		}
 	}
 	
+	/* initialize()
+	 *  Description - Initializes class variables
+	 */
+	private void initialize() {
+		
+		receivedMessages = new LinkedBlockingQueue<DatagramPacket>();
+		
+		state = "new";
+		
+		try {
+			socket = new DatagramSocket();
+		} catch (SocketException e) {
+			System.out.println("Unable to open socket.");
+			e.printStackTrace();
+		}
+		socket.connect(serverIP, serverPort);
+		
+		// Initialize Canvas object
+		canvas = new Canvas();
+		canvas.setIgnoreRepaint(true);
+		canvas.setBounds(0, 0, screenWidth, screenHeight);
+		canvas.setBackground(Color.black);
+		canvas.setVisible(true);
+		
+		// Initialize JFrame object
+		frame = new JFrame("Project Deathmatch ~ Alpha");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setUndecorated(true);
+        frame.setIgnoreRepaint(true);
+        frame.setVisible(true);
+        graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        newDisplayMode = new DisplayMode(screenWidth, screenHeight, 32, 60);
+        if(graphicsDevice.isFullScreenSupported()) {
+            try {
+                graphicsDevice.setFullScreenWindow(frame);
+            }catch(Exception e){e.printStackTrace();}
+        }
+        if(graphicsDevice.isDisplayChangeSupported()) {
+            try {
+                graphicsDevice.setDisplayMode(newDisplayMode);
+            }catch(Exception e){e.printStackTrace();}
+        }
+        
+        // Add canvas to the frame and create buffer strategy
+        frame.add(canvas);
+		canvas.createBufferStrategy(2);
+        buffer = canvas.getBufferStrategy();
+        canvas.requestFocus();
+		
+		// Add action listeners to Client
+        canvas.addMouseListener(this);
+        canvas.addMouseMotionListener(this);
+        canvas.addKeyListener(this);
+	}
+	
 	/* loadMap(String filename)
 	 *  Description - Loads a map give the string filename
 	 */
@@ -191,34 +232,32 @@ public class Client
 		implements Runnable {
 		
 		byte[] receiveData = new byte[1024];
-		DatagramSocket clientSocket;
-		String received, state = "start";
-		
-		public ReceiveThread(DatagramSocket receiveSocket) {
-			
-			clientSocket = receiveSocket;
-		}
 		
 		public void run() {
 			System.out.println("Waiting to receive...");
+			DatagramPacket receivedPacket;
+			
+			// Debuggin Variable
+			String received;
+			
 			try {
 				while(true) {
-					DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-					clientSocket.receive(receivePacket);
-					received = new String(receivePacket.getData());
+					receivedPacket = new DatagramPacket(receiveData, receiveData.length);
+					socket.receive(receivedPacket);
+					receivedMessages.put(receivedPacket);
+					
+					// Debugging Code
+					received = new String(receivedPacket.getData());
 					System.out.println("Received " + received.toString());
-					if(state.equals("start")) {
-						// Load map name received
-						synchronized(map) {
-							map = loadMap(received + ".map");
-						}
-					}
 				}
 			} catch (SocketException e) {
 				System.out.println("Unable to open a socket connection on specified port number.");
 				System.exit(0);
 			} catch (IOException e) {
 				System.out.println("Unable to receive packet.");
+			} catch (InterruptedException e) {
+				System.out.println("Unable to put packet into receivedMessages queue.");
+				e.printStackTrace();
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 package deathmatch.main;
 
-public class Warrior extends Class {
+public class Warrior extends PlayerClass {
 
 }
