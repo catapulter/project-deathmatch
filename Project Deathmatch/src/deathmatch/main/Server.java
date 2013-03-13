@@ -249,9 +249,10 @@ public class Server {
 			System.out.print("Enter map name: ");
 		}
 		readIn.close();
-		map = loadMap(nextMap + ".map");
-		System.out.println("Width of map: " + Integer.toString(map.getWidth()));
-		System.out.println("Height of map: " + Integer.toString(map.getHeight()));
+		System.out.println("nextMap: maps/" + nextMap + ".map");
+		map = loadMap("maps/" + nextMap + ".map");
+		//System.out.println("Width of map: " + Integer.toString(map.getWidth()));
+		//System.out.println("Height of map: " + Integer.toString(map.getHeight()));
 	}//serverSetup()
 	
 	private Map loadMap(String filename) {
