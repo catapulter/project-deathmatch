@@ -7,13 +7,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Server {
 
@@ -29,6 +29,7 @@ public class Server {
 											//Holds Clients who are currently playing
 	HashMap<String, Point> playerList;	  //Key: IPaddress:Port   Value: Character Point Location
 											//Holds Client character locations
+	LinkedBlockingQueue<DatagramPacket> receiveMessages;
 	
 	
 	// CONSTRUCTORS
@@ -52,6 +53,8 @@ public class Server {
 		playerList = new HashMap<String, Point>();
 		classList = new ArrayList<String>();
 		mapList = new ArrayList<String>();
+		receiveMessages = new LinkedBlockingQueue<DatagramPacket>();
+		
 		
 		//Get the list of available maps 
 		getMaps();
@@ -78,11 +81,64 @@ public class Server {
 		// Read commands
 		while(true) {
 			//prompt server commands
+			//checking queue for message
+				//switch 
+			String sentence = null;
+			DatagramPacket headMessage;
+			if(!receiveMessages.isEmpty()){
+				try{
+					headMessage = receiveMessages.poll();
+					sentence = new String(headMessage.getData());
+					String temp[] = headMessage.getAddress().toString().split("/");
+					String packetAddress = temp[1];
+					System.out.println(packetAddress);
+	                //Debug
+					System.out.println("RECEIVED: " + sentence);
+					
+					//Game State
+					//Moves to Stop Connection State when TC is sent from client
+			        if(clientList.get(packetAddress+":"+Integer.toString(headMessage.getPort())) != null){
+			        	//Packet is from client currently playing
+			        	
+			        	//Stop Connection State
+			        	//Removes client from list
+			        	if(sentence.equals("TC")){
+			        		// Terminate Connection from client
+			        		clientList.remove(packetAddress+":"+Integer.toString(headMessage.getPort()));
+			        	}	
+			        }
+			        //Init State
+			        //Moves to Game State when clients send playerName:className
+			        else if(pendingClientList.get(packetAddress+":"+Integer.toString(headMessage.getPort())) != null){
+			        	//Packet is from pending client loading the game.
+			        	
+			        	String[] sa = sentence.split(":");
+			        	
+			        	if(sa.length == 2 && classList.contains(sa[1])){
+			        		clientList.put(packetAddress+":"+Integer.toString(headMessage.getPort()), pendingClientList.get(packetAddress+":"+Integer.toString(headMessage.getPort())));
+			        		pendingClientList.remove(packetAddress+":"+Integer.toString(headMessage.getPort()));
+			        	}
+			        }
+			        //NC State
+			        //Moves to Init State on valid port number sent from client
+			        else{
+			        	//Packet is from unknown client
+			        	
+			        	//check if packet is a port number
+			    		if(sentence == "NC"){
+				        	int replyPort = headMessage.getPort();
+				    		pendingClientList.put(packetAddress+":"+Integer.toString(headMessage.getPort()), replyPort);
+			    		}
+			        }
+				}catch(NumberFormatException e){
+		            System.out.println("Unable to parse port from new clients packet.");
+		            //Should this do anything here?
+		        }
+			}//if message queue is not empty
 			
-		}
+		}//while True
 		
 	}// start()
-	
 	
 	// PRIVATE METHODS
 	/************
@@ -181,53 +237,13 @@ public class Server {
 			
 			try {
 				serverSocket = new DatagramSocket(9001);
-				
+				DatagramPacket receivePacket;
 				while(true) {
-					
+					receivePacket = new DatagramPacket(receiveData, receiveData.length);
 					//Debug
 					System.out.println("Waiting to receive...");
-						
-					DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 					serverSocket.receive(receivePacket);
-					String sentence = new String(receivePacket.getData());
-					String temp[] = receivePacket.getAddress().toString().split("/");
-					String packetAddress = temp[1];
-					System.out.println(packetAddress);
-	                //Debug
-					System.out.println("RECEIVED: " + sentence);
-	                
-	                //Game State
-					//Moves to Stop Connection State when TC is sent from client
-	                if(clientList.get(packetAddress+":"+Integer.toString(receivePacket.getPort())) != null){
-	                	//Packet is from client currently playing
-	                	
-	                	//Stop Connection State
-	                	//Removes client from list
-	                	if(sentence.equals("TC")){
-	                		// Terminate Connection from client
-	                		clientList.remove(packetAddress+":"+Integer.toString(receivePacket.getPort()));
-	                	}	
-	                }
-	                //Init State
-	                //Moves to Game State when clients send playerName:className
-	                else if(pendingClientList.get(packetAddress+":"+Integer.toString(receivePacket.getPort())) != null){
-	                	//Packet is from pending client loading the game.
-	                	
-	                	String[] sa = sentence.split(":");
-	                	
-	                	if(sa.length == 2 && classList.contains(sa[1])){
-	                		clientList.put(packetAddress+":"+Integer.toString(receivePacket.getPort()), pendingClientList.get(packetAddress+":"+Integer.toString(receivePacket.getPort())));
-	                		pendingClientList.remove(packetAddress+":"+Integer.toString(receivePacket.getPort()));
-	                	}
-	                }
-	                //NC State
-	                //Moves to Init State on valid port number sent from client
-	                else{
-	                	//Packet is from unknown client
-	                	//check if packet is a port number
-                		int replyPort = Integer.parseInt(sentence.trim());
-                		pendingClientList.put(packetAddress+":"+Integer.toString(receivePacket.getPort()), replyPort);
-	                }
+					receiveMessages.put(receivePacket);	
 				}
 			} catch (SocketException e) {
 				System.out.println("Unable to open a socket connection on specified port number.");
@@ -237,7 +253,9 @@ public class Server {
 			} catch(NumberFormatException e){
 	            System.out.println("Unable to parse port from new clients packet.");
 	            //Should this do anything here?
-	        }
+	        } catch (InterruptedException e) {
+				System.out.println("Unable to put receivePacket into receiveMessages queue.");
+			}
 			
 		}
 	}
@@ -250,8 +268,8 @@ public class Server {
 		public void run() {
 			byte[] sendData = new byte[1024];
 			DatagramSocket sendSocket;
-			Set keys;
-			Iterator iter;
+			Set<String> keys;
+			Iterator<String> iter;
 			while(true){
 				keys = pendingClientList.keySet();
 				iter = keys.iterator();
