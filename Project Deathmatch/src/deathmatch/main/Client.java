@@ -52,6 +52,11 @@ public class Client
 	private LinkedBlockingQueue<DatagramPacket> receivedMessages;
 	private String state;
 	
+	private static String GAME_STATE = "game";
+	private static String NEW_STATE = "new";
+	private static String MAP_STATE = "map";
+	private static String NAME_STATE = "name";
+	
 	private PlayerClass archer, cleric, mage, warrior;
 	private Player player;
 	
@@ -85,7 +90,7 @@ public class Client
 		byte[] sendData;
 		
 		// establish connection
-		if(state.equals("new")) {
+		if(state.equals(NEW_STATE)) {
 			try {
 				sendData = new String("NC").getBytes();
 				DatagramPacket packet = new DatagramPacket(sendData, sendData.length, serverIP, serverPort);
@@ -100,7 +105,7 @@ public class Client
 				e.printStackTrace();
 			}
 			
-			state = "map";
+			state = MAP_STATE;
 		}
 						
 		// Loop variables
@@ -116,7 +121,7 @@ public class Client
 				DatagramPacket sendPacket;
 				message = new String(packet.getData());
 				
-				if(state.equals("map")) {
+				if(state.equals(MAP_STATE)) {
 					
 					// Load map
 					map = loadMap("maps/" + message.split(":")[1].trim() + ".map");
@@ -131,9 +136,10 @@ public class Client
 						e.printStackTrace();
 					}
 					
-					state = "name";
+//					state = NAME_STATE;
+					state = GAME_STATE;
 				
-				} else if(state.equals("name")) {
+				} else if(state.equals(NAME_STATE)) {
 					
 					
 					
@@ -142,15 +148,22 @@ public class Client
 			
 			
 			
-	        if(state.equals("game")) {
+	        if(state.equals(GAME_STATE)) {
 				// Graphics manipulation loop
-				map.drawBottom(graphics, 0, 0);
+	        	System.out.println("FUCK!@!!!!!");
+	        	
+	        	Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
+	        	
+				map.drawBottom(g, 0, 0);
 				
-				map.drawTop(graphics, 0, 0);
+				map.drawTop(g, 0, 0);
+				
+				g.dispose();
+				strategy.show();
+				state = "FUCK";
 	        }
 			
 		}
-		
 		
 	}// start()
 	
@@ -229,22 +242,26 @@ public class Client
 		
 		// Initialize JFrame object
 		frame = new JFrame("Project Deathmatch ~ Alpha");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setUndecorated(true);
+		
+		frame.setSize(800,800);
+		
+//        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame.setUndecorated(true);
         frame.setIgnoreRepaint(true);
         frame.setVisible(true);
-        graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        newDisplayMode = new DisplayMode(screenWidth, screenHeight, 32, 60);
-        if(graphicsDevice.isFullScreenSupported()) {
-            try {
-                graphicsDevice.setFullScreenWindow(frame);
-            }catch(Exception e){e.printStackTrace();}
-        }
-        if(graphicsDevice.isDisplayChangeSupported()) {
-            try {
-                graphicsDevice.setDisplayMode(newDisplayMode);
-            }catch(Exception e){e.printStackTrace();}
-        }
+//        graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+//        newDisplayMode = new DisplayMode(screenWidth, screenHeight, 32, 60);
+//        if(graphicsDevice.isFullScreenSupported()) {
+//            try {
+//                graphicsDevice.setFullScreenWindow(frame);
+//            }catch(Exception e){e.printStackTrace();}
+//        }
+//        if(graphicsDevice.isDisplayChangeSupported()) {
+//            try {
+//                graphicsDevice.setDisplayMode(newDisplayMode);
+//            }catch(Exception e){e.printStackTrace();}
+//        }
         
         // Add canvas to the frame and create buffer strategy
         frame.add(canvas);

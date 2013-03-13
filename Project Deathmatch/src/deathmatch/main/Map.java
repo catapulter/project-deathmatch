@@ -148,7 +148,7 @@ public class Map {
 	 */
 	public void drawBottom(Graphics2D graphics, int xPR, int yPR) {
 		
-		graphics.drawImage(mapImage, 0, 0, null);
+		graphics.drawImage(mapImage, xPR, yPR, null);
 	}
 	
 	/* drawTop(Graphics2D graphics, int xPR, int yPR)
@@ -156,7 +156,7 @@ public class Map {
 	 */
 	public void drawTop(Graphics2D graphics, int xPR, int yPR) {
 		
-		graphics.drawImage(mapTopImage, 0, 0, null);
+		graphics.drawImage(mapTopImage, xPR, yPR, null);
 	}
 	
 	/* drawMiniMap(Graphics2D graphics, int xPR, int yPR)
@@ -164,7 +164,7 @@ public class Map {
 	 */
 	public void drawMiniMap(Graphics2D graphics, int xPR, int yPR) {
 		
-		graphics.drawImage(mapTopImage, 0, 0, null);
+		graphics.drawImage(mapTopImage, xPR, yPR, null);
 	}
 	
 }

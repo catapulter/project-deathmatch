@@ -54,7 +54,6 @@ public class PlayerClass {
 					playerClass.classType = sa[1];
 				} else if(sa[0].equals("health")) {
 					playerClass.health = Integer.parseInt(sa[1]);
-					//System.out.println(playerClass.health);
 				} else if(sa[0].equals("energy")) {
 					playerClass.energy = Integer.parseInt(sa[1]);
 				} else if(sa[0].equals("armor")) {
