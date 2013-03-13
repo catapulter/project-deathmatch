@@ -52,6 +52,9 @@ public class Client
 	private LinkedBlockingQueue<DatagramPacket> receivedMessages;
 	private String state;
 	
+	private PlayerClass archer, cleric, mage, warrior;
+	private Player player;
+	
 	// CONSTRUCTORS
 	
 	public static void main(String[] args) {
@@ -88,6 +91,7 @@ public class Client
 				
 				// Debugging Code
 				System.out.println("Sent.");
+				
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -111,8 +115,11 @@ public class Client
 				
 				if(state.equals("map")) {
 					
+					// Load map
 					map = loadMap(message.split(":")[1].trim());
 					
+					// TODO
+					// Just send a name and playerClass
 					
 				}
 			}
@@ -154,6 +161,19 @@ public class Client
                 	sa = sa[1].split("x");
                 	screenWidth = Integer.parseInt(sa[0].trim());
                 	screenHeight = Integer.parseInt(sa[1].trim());
+                } else if(sa[0].trim().equals("name:class")) {
+                	sa = sa[1].split(":");
+                	sa[0] = sa[0].trim();
+                	sa[1] = sa[1].trim();
+                	if(sa[1].equals("archer")) {
+                		player = new Player(sa[0], archer);
+                	} else if(sa[1].equals("cleric")) {
+                		player = new Player(sa[0], cleric);
+                	} else if(sa[1].equals("mage")) {
+                		player = new Player(sa[0], mage);
+                	} else if(sa[1].equals("warrior")) {
+                		player = new Player(sa[0], warrior);
+                	}
                 }
             }
 		} catch (Exception e) {
@@ -215,6 +235,13 @@ public class Client
         canvas.addMouseListener(this);
         canvas.addMouseMotionListener(this);
         canvas.addKeyListener(this);
+        
+        
+        // Load PlayerClasses
+        archer = PlayerClass.loadPlayerClass("classes/archer.cls");
+        cleric = PlayerClass.loadPlayerClass("classes/cleric.cls");
+        mage = PlayerClass.loadPlayerClass("classes/mage.cls");
+        warrior = PlayerClass.loadPlayerClass("classes/warrior.cls");
 	}
 	
 	/* loadMap(String filename)
@@ -224,6 +251,14 @@ public class Client
 		
 		// TODO Write code to read in map file
 		return new Map(filename);
+	}
+	
+	/* loadPlayerClasses(String filename) {
+	 * 	Description - Loads the class file 'filename'
+	 */
+	private void loadPlayerClasses() {
+		
+		
 	}
 	
 	// THREAD CLASSES
