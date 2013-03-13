@@ -53,7 +53,7 @@ public class Map {
 				sa[0] = sa[0].trim();
 				sa[1] = sa[1].trim();
 				GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-				System.out.println(sa[1]);
+				
 				if(sa[0].equals("mapImage")) {
 					try {
 			            sourceImage = ImageIO.read(new File("Images/Maps/"+sa[1]));
