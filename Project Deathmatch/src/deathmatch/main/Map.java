@@ -1,7 +1,17 @@
 package deathmatch.main;
 
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Transparency;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 public class Map {
 	
@@ -29,9 +39,62 @@ public class Map {
 	 * Loads the current Map with all of its 
 	 * variables from a fileName passed in.
 	 */
-	public Map(String fileName){
+	public Map(String filename){
 		//TODO
 		//Load all map data from fileName (ie Test.data)
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
+			
+			Image sourceImage = null;
+			String line;
+			String[] sa;
+			while((line = br.readLine()) != null) {
+				sa = line.split("=");
+				sa[0] = sa[0].trim();
+				sa[1] = sa[1].trim();
+				
+				if(sa[0].equals("mapImage")) {
+					try {
+			            sourceImage = ImageIO.read(new File("Images/Maps"+sa[1]));
+			        }catch(IOException e){e.printStackTrace();}
+					GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+			        mapImage = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
+			        mapImage.getGraphics().drawImage(sourceImage, 0, 0, null);
+				} else if(sa[0].equals("mapTopImage")) {
+					try {
+			            sourceImage = ImageIO.read(new File("Images/Maps"+sa[1]));
+			        }catch(IOException e){e.printStackTrace();}
+					GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+			        mapTopImage = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
+			        mapTopImage.getGraphics().drawImage(sourceImage, 0, 0, null);
+				} else if(sa[0].equals("miniMapImage")) {
+					try {
+			            sourceImage = ImageIO.read(new File("Images/Maps"+sa[1]));
+			        }catch(IOException e){e.printStackTrace();}
+					GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+			        miniMapImage = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
+			        miniMapImage.getGraphics().drawImage(sourceImage, 0, 0, null);
+				} else if(sa[0].equals("thumbnail")) {
+					try {
+			            sourceImage = ImageIO.read(new File("Images/Maps"+sa[1]));
+			        }catch(IOException e){e.printStackTrace();}
+					GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+					thumbnail = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
+					thumbnail.getGraphics().drawImage(sourceImage, 0, 0, null);
+				} else if(sa[0].equals("recommendedPlayers")) {
+					recommendedPlayers = Integer.parseInt(sa[1]);
+				} else if(sa[0].equals("ambientSound")) {
+					ambientSound = sa[1];
+				}
+			}
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	//Member Functions
