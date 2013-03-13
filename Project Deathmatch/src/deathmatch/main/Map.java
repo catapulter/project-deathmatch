@@ -19,13 +19,17 @@ public class Map {
 	private String ambientSound;
 	private String mapName;
 	
-	//Constructor
+//	   ______                 __                  __            
+//	  / ____/___  ____  _____/ /________  _______/ /_____  _____
+//	 / /   / __ \/ __ \/ ___/ __/ ___/ / / / ___/ __/ __ \/ ___/
+//	/ /___/ /_/ / / / (__  ) /_/ /  / /_/ / /__/ /_/ /_/ / /    
+//	\____/\____/_/ /_/____/\__/_/   \__,_/\___/\__/\____/_/     
 	/*****************
 	 * Description - Map Constructor
 	 * Loads the current Map with all of its 
 	 * variables from a fileName passed in.
 	 */
-	Map(String fileName){
+	public Map(String fileName){
 		//TODO
 		//Load all map data from fileName (ie Test.data)
 	}
@@ -66,8 +70,35 @@ public class Map {
 		return mapName;
 	}
 	
+//	    ____                         __  ___     __  __              __    
+//	   / __ \_________ __      __   /  |/  /__  / /_/ /_  ____  ____/ /____
+//	  / / / / ___/ __ `/ | /| / /  / /|_/ / _ \/ __/ __ \/ __ \/ __  / ___/
+//	 / /_/ / /  / /_/ /| |/ |/ /  / /  / /  __/ /_/ / / / /_/ / /_/ (__  ) 
+//	/_____/_/   \__,_/ |__/|__/  /_/  /_/\___/\__/_/ /_/\____/\__,_/____/  
 	
-	//private draw(Graphics2D graphics){
-		//draw Map
-	//}
+	
+	/* drawBottom(Graphics2D graphics, int xPR, int yPR)
+	 * 
+	 */
+	public void drawBottom(Graphics2D graphics, int xPR, int yPR) {
+		
+		graphics.drawImage(mapImage, 0, 0, null);
+	}
+	
+	/* drawTop(Graphics2D graphics, int xPR, int yPR)
+	 * 
+	 */
+	public void drawTop(Graphics2D graphics, int xPR, int yPR) {
+		
+		graphics.drawImage(mapTopImage, 0, 0, null);
+	}
+	
+	/* drawMiniMap(Graphics2D graphics, int xPR, int yPR)
+	 * 
+	 */
+	public void drawMiniMap(Graphics2D graphics, int xPR, int yPR) {
+		
+		graphics.drawImage(mapTopImage, 0, 0, null);
+	}
+	
 }
