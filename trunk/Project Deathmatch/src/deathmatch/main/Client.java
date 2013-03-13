@@ -252,9 +252,10 @@ public class Client
 				}
 			} catch (SocketException e) {
 				System.out.println("Unable to open a socket connection on specified port number.");
-				System.exit(0);
+				e.printStackTrace();
 			} catch (IOException e) {
 				System.out.println("Unable to receive packet.");
+				e.printStackTrace();
 			} catch (InterruptedException e) {
 				System.out.println("Unable to put packet into receivedMessages queue.");
 				e.printStackTrace();
