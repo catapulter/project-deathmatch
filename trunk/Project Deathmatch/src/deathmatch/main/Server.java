@@ -31,6 +31,8 @@ public class Server {
 											//Holds Client character locations
 	LinkedBlockingQueue<DatagramPacket> receiveMessages;
 	
+	// Server Socket thingy
+	DatagramSocket socket;
 	
 	// CONSTRUCTORS
 	
@@ -54,6 +56,13 @@ public class Server {
 		classList = new ArrayList<String>();
 		mapList = new ArrayList<String>();
 		receiveMessages = new LinkedBlockingQueue<DatagramPacket>();
+		
+		// Initialize Server Socket
+		try {
+			socket = new DatagramSocket(9001);
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+		}
 		
 		
 		//Get the list of available maps 
@@ -94,6 +103,7 @@ public class Server {
 					System.out.println(packetAddress);
 	                //Debug
 					System.out.println("RECEIVED: " + sentence);
+					sentence = sentence.trim();
 					
 					//Game State
 					//Moves to Stop Connection State when TC is sent from client
@@ -125,7 +135,9 @@ public class Server {
 			        	//Packet is from unknown client
 			        	
 			        	//check if packet is a port number
-			    		if(sentence == "NC"){
+			        	
+			    		if(sentence.equals("NC")){
+			    			System.out.println("saved to pendingClientList");
 				        	int replyPort = headMessage.getPort();
 				    		pendingClientList.put(packetAddress+":"+Integer.toString(headMessage.getPort()), replyPort);
 			    		}
@@ -233,16 +245,14 @@ public class Server {
 		
 		public void run() {
 			
-			DatagramSocket serverSocket;
-			
 			try {
-				serverSocket = new DatagramSocket(9001);
+				
 				DatagramPacket receivePacket;
 				while(true) {
 					receivePacket = new DatagramPacket(receiveData, receiveData.length);
 					//Debug
 					System.out.println("Waiting to receive...");
-					serverSocket.receive(receivePacket);
+					socket.receive(receivePacket);
 					receiveMessages.put(receivePacket);	
 				}
 			} catch (SocketException e) {
@@ -267,7 +277,6 @@ public class Server {
 		
 		public void run() {
 			byte[] sendData = new byte[1024];
-			DatagramSocket sendSocket;
 			Set<String> keys;
 			Iterator<String> iter;
 			while(true){
@@ -284,17 +293,15 @@ public class Server {
 						try {
 							sendData = new byte[1024];
 							int sendPort = pendingClientList.get(o);
-							sendSocket = new DatagramSocket();
 							String comboString[] = o.toString().split(":");
 							InetAddress clientIP = InetAddress.getByName(comboString[0]);
-							sendSocket.connect(clientIP, sendPort);
 							sendData = new String("MP:"+nextMap).getBytes();
-							System.out.println("Sending : " + sendPort);
+							System.out.println("Sending to " + sendPort);
 							DatagramPacket packet = new DatagramPacket(sendData, sendData.length, clientIP, sendPort);
-							sendSocket.send(packet);
-							//System.out.println("Sent.");
+							socket.send(packet);
+							System.out.println("Sent.");
 							satisfiedPendingClientList.put(o.toString(), true);
-							sendSocket.close();
+							
 						} catch (UnsupportedEncodingException e) {
 							e.printStackTrace();
 						} catch (IOException e) {
