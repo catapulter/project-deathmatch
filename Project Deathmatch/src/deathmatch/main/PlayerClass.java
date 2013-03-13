@@ -17,6 +17,22 @@ public class PlayerClass {
 		
 	}
 	
+	public int getHealth() {
+		return health;
+	}
+	
+	public int getEnergy() {
+		return energy;
+	}
+	
+	public int getArmor() {
+		return armor;
+	}
+	
+	public int getSpeed() {
+		return speed;
+	}
+	
 	static PlayerClass loadPlayerClass(String filename) {
 		
 		PlayerClass playerClass = new PlayerClass();
