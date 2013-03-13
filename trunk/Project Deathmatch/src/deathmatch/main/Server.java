@@ -18,20 +18,20 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Server {
 
 	// Class variables
-	int maxPlayers; //max number of players for selected map
-	String nextMap; //next map that the server will change to / broadcast to clients
-	ArrayList<String> classList; // list of available character classes
-	ArrayList<String> mapList; // list of available maps
-	HashMap<String, Boolean> satisfiedPendingClientList;
-	HashMap<String, Boolean> pendingClientList;  //Key: IPaddress:Port   Value: ReplyPort
+	private int maxPlayers; //max number of players for selected map
+	private String nextMap; //next map that the server will change to / broadcast to clients
+	private ArrayList<String> classList; // list of available character classes
+	private ArrayList<String> mapList; // list of available maps
+	private HashMap<String, Boolean> satisfiedPendingClientList;
+	private HashMap<String, Boolean> pendingClientList;  //Key: IPaddress:Port   Value: ReplyPort
 													//Holds Pending Clients that are loading the map
-	HashMap<String, Player> clientList;  //Key: IPaddress:Port   Value: ReplyPort
+	private HashMap<String, Player> clientList;  //Key: IPaddress:Port   Value: ReplyPort
 											//Holds Clients who are currently playing
-	LinkedBlockingQueue<DatagramPacket> receiveMessages;
+	private LinkedBlockingQueue<DatagramPacket> receiveMessages;
 	private PlayerClass archer, cleric, mage, warrior;
 	
 	// Server Socket thingy
-	DatagramSocket socket;
+	private DatagramSocket socket;
 	
 	// CONSTRUCTORS
 	
@@ -46,7 +46,7 @@ public class Server {
 	/* start()
 	 *  Description - Called at the start of the program
 	 */
-	public void start() {
+	private void start() {
 		//Initialize everything
 		initialize();
 		// Start the receive thread
