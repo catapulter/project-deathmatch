@@ -52,33 +52,30 @@ public class Map {
 				sa = line.split("=");
 				sa[0] = sa[0].trim();
 				sa[1] = sa[1].trim();
+				GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
 				
 				if(sa[0].equals("mapImage")) {
 					try {
 			            sourceImage = ImageIO.read(new File("Images/Maps"+sa[1]));
 			        }catch(IOException e){e.printStackTrace();}
-					GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-			        mapImage = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
+					mapImage = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
 			        mapImage.getGraphics().drawImage(sourceImage, 0, 0, null);
 				} else if(sa[0].equals("mapTopImage")) {
 					try {
 			            sourceImage = ImageIO.read(new File("Images/Maps"+sa[1]));
 			        }catch(IOException e){e.printStackTrace();}
-					GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-			        mapTopImage = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
+					mapTopImage = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
 			        mapTopImage.getGraphics().drawImage(sourceImage, 0, 0, null);
 				} else if(sa[0].equals("miniMapImage")) {
 					try {
 			            sourceImage = ImageIO.read(new File("Images/Maps"+sa[1]));
 			        }catch(IOException e){e.printStackTrace();}
-					GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-			        miniMapImage = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
+					miniMapImage = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
 			        miniMapImage.getGraphics().drawImage(sourceImage, 0, 0, null);
 				} else if(sa[0].equals("thumbnail")) {
 					try {
 			            sourceImage = ImageIO.read(new File("Images/Maps"+sa[1]));
 			        }catch(IOException e){e.printStackTrace();}
-					GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
 					thumbnail = gc.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
 					thumbnail.getGraphics().drawImage(sourceImage, 0, 0, null);
 				} else if(sa[0].equals("recommendedPlayers")) {
