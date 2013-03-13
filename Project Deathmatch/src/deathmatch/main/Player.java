@@ -16,6 +16,8 @@ public class Player extends Entity {
 	public Player(String namePR, PlayerClass classPR) {
 		
 		name = namePR;
+		position.setX(100);
+		position.setY(100);
 		playerClass = classPR;
 		currentHealth = classPR.getHealth();
 		currentEnergy = classPR.getEnergy();
