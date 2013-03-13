@@ -1,7 +1,4 @@
-mapName = Test
 mapImage = test_bot.png
 mapTopImage = test_top.png
-miniMapImage = TestMini.png
-thumbnail = TestThumbnail.png
 recommendedPlayers = 3
 ambientSound = testAmbient.wav
