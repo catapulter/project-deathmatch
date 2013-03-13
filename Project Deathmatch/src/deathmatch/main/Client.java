@@ -119,7 +119,7 @@ public class Client
 				if(state.equals("map")) {
 					
 					// Load map
-					map = loadMap(message.split(":")[1].trim());
+					map = loadMap("maps/" + message.split(":")[1].trim() + ".map");
 					
 					// TODO
 					// Just send a name and playerClass
@@ -305,7 +305,7 @@ public class Client
 					
 					// Debugging Code
 					received = new String(receivedPacket.getData());
-					System.out.println("Received " + received.toString());
+					System.out.println("Received " + received.toString().trim());
 				}
 			} catch (SocketException e) {
 				System.out.println("Unable to open a socket connection on specified port number.");
