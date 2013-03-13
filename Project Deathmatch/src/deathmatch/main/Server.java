@@ -23,13 +23,12 @@ public class Server {
 	ArrayList<String> classList; // list of available character classes
 	ArrayList<String> mapList; // list of available maps
 	HashMap<String, Boolean> satisfiedPendingClientList;
-	HashMap<String, Integer> pendingClientList;  //Key: IPaddress:Port   Value: ReplyPort
+	HashMap<String, Boolean> pendingClientList;  //Key: IPaddress:Port   Value: ReplyPort
 													//Holds Pending Clients that are loading the map
-	HashMap<String, Integer> clientList;  //Key: IPaddress:Port   Value: ReplyPort
+	HashMap<String, Player> clientList;  //Key: IPaddress:Port   Value: ReplyPort
 											//Holds Clients who are currently playing
-	HashMap<String, Point> playerList;	  //Key: IPaddress:Port   Value: Character Point Location
-											//Holds Client character locations
 	LinkedBlockingQueue<DatagramPacket> receiveMessages;
+	private PlayerClass archer, cleric, mage, warrior;
 	
 	// Server Socket thingy
 	DatagramSocket socket;
@@ -48,37 +47,8 @@ public class Server {
 	 *  Description - Called at the start of the program
 	 */
 	public void start() {
-		//Initialize HashMaps
-		clientList = new HashMap<String, Integer>();
-		satisfiedPendingClientList = new HashMap<String, Boolean>();
-		pendingClientList = new HashMap<String, Integer>();
-		playerList = new HashMap<String, Point>();
-		classList = new ArrayList<String>();
-		mapList = new ArrayList<String>();
-		receiveMessages = new LinkedBlockingQueue<DatagramPacket>();
-		
-		// Initialize Server Socket
-		try {
-			socket = new DatagramSocket(9001);
-		} catch (SocketException e1) {
-			e1.printStackTrace();
-		}
-		
-		
-		//Get the list of available maps 
-		getMaps();
-		if(mapList == null){
-			System.out.println("Unable to find maps.");
-			System.exit(0);
-		}
-		//Get the list of available character classes
-		getClasses();
-		if(classList == null){
-			System.out.println("Unable to find character classes.");
-			System.exit(0);
-		}
-		//get the next map from the server
-		serverSetup();
+		//Initialize everything
+		initialize();
 		// Start the receive thread
 		Thread receiveThread = new Thread(new ReceiveThread());
 		receiveThread.start();
@@ -125,7 +95,13 @@ public class Server {
 			        	String[] sa = sentence.split(":");
 			        	
 			        	if(sa.length == 2 && classList.contains(sa[1])){
-			        		clientList.put(packetAddress+":"+Integer.toString(headMessage.getPort()), pendingClientList.get(packetAddress+":"+Integer.toString(headMessage.getPort())));
+			        		PlayerClass newPlayerClass = null;
+			        		if(sa[1].equals("archer")) newPlayerClass = archer;
+			        		else if(sa[1].equals("mage")) newPlayerClass = mage;
+			        		else if(sa[1].equals("warrior")) newPlayerClass = warrior;
+			        		else if(sa[1].equals("cleric")) newPlayerClass = cleric;
+			        		Player newPlayer = new Player(sa[0], newPlayerClass);
+			        		clientList.put(packetAddress+":"+Integer.toString(headMessage.getPort()), newPlayer);
 			        		pendingClientList.remove(packetAddress+":"+Integer.toString(headMessage.getPort()));
 			        	}
 			        }
@@ -137,9 +113,7 @@ public class Server {
 			        	//check if packet is a port number
 			        	
 			    		if(sentence.equals("NC")){
-			    			System.out.println("saved to pendingClientList");
-				        	int replyPort = headMessage.getPort();
-				    		pendingClientList.put(packetAddress+":"+Integer.toString(headMessage.getPort()), replyPort);
+				    		pendingClientList.put(packetAddress+":"+Integer.toString(headMessage.getPort()), true);
 			    		}
 			        }
 				}catch(NumberFormatException e){
@@ -153,6 +127,46 @@ public class Server {
 	}// start()
 	
 	// PRIVATE METHODS
+	
+	private void initialize(){
+		//Initialize HashMaps
+		clientList = new HashMap<String, Player>();
+		satisfiedPendingClientList = new HashMap<String, Boolean>();
+		pendingClientList = new HashMap<String, Boolean>();
+		classList = new ArrayList<String>();
+		mapList = new ArrayList<String>();
+		receiveMessages = new LinkedBlockingQueue<DatagramPacket>();
+		
+		// Initialize Server Socket
+		try {
+			socket = new DatagramSocket(9001);
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+		}
+		
+		
+		//Get the list of available maps 
+		getMaps();
+		if(mapList == null){
+			System.out.println("Unable to find maps.");
+			System.exit(0);
+		}
+		//Get the list of available character classes
+		getClasses();
+		if(classList == null){
+			System.out.println("Unable to find character classes.");
+			System.exit(0);
+		}
+		//get the next map from the server
+		serverSetup();
+		
+		 // Load PlayerClasses
+        archer = PlayerClass.loadPlayerClass("classes/archer.cls");
+        cleric = PlayerClass.loadPlayerClass("classes/cleric.cls");
+        mage = PlayerClass.loadPlayerClass("classes/mage.cls");
+        warrior = PlayerClass.loadPlayerClass("classes/warrior.cls");
+		
+	}//initialize()
 	/************
 	 * DESCRIPTIONS - getMaps
 	 * Returns a list of all maps in the maps folder. 
@@ -292,8 +306,9 @@ public class Server {
 					if(satisfiedPendingClientList.containsKey(o.toString())!= true){
 						try {
 							sendData = new byte[1024];
-							int sendPort = pendingClientList.get(o);
+							
 							String comboString[] = o.toString().split(":");
+							int sendPort = Integer.parseInt(comboString[1]);
 							InetAddress clientIP = InetAddress.getByName(comboString[0]);
 							sendData = new String("MP:"+nextMap).getBytes();
 							System.out.println("Sending to " + sendPort);
