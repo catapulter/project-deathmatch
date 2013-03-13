@@ -85,6 +85,7 @@ public class Server {
 			        	//Removes client from list
 			        	if(sentence.equals("TC")){
 			        		// Terminate Connection from client
+			        		System.out.println("Client : " + packetAddress+":"+Integer.toString(headMessage.getPort()) + " has disconnected from the server.");
 			        		clientList.remove(packetAddress+":"+Integer.toString(headMessage.getPort()));
 			        	}	
 			        }
@@ -96,8 +97,6 @@ public class Server {
 			        	String[] sa = sentence.split(":");
 			        	
 			        	if(sa.length == 2 && classList.contains(sa[1])){
-			        		System.out.println("Player Name: " + sa[0]);
-			        		System.out.println("Class Type: " + sa[1]);
 			        		PlayerClass newPlayerClass = null;
 			        		if(sa[1].equals("archer")) newPlayerClass = archer;
 			        		else if(sa[1].equals("mage")) newPlayerClass = mage;
@@ -241,23 +240,18 @@ public class Server {
 			System.out.println(mapList.get(x));
 		}
 		System.out.print("Enter map name: ");
-		Scanner readIn = new Scanner(System.in);
+		//Scanner readIn = new Scanner(System.in);
 		while(true){
-			nextMap = readIn.next();
+			nextMap = "Test";//readIn.next();
 			if(mapList.contains(nextMap)) break;
 			System.out.println("Invalid map name.");
 			System.out.print("Enter map name: ");
 		}
-		readIn.close();
-		System.out.println("nextMap: maps/" + nextMap + ".map");
+		//readIn.close();
 		map = loadMap("maps/" + nextMap + ".map");
-		//System.out.println("Width of map: " + Integer.toString(map.getWidth()));
-		//System.out.println("Height of map: " + Integer.toString(map.getHeight()));
 	}//serverSetup()
 	
 	private Map loadMap(String filename) {
-		
-		// TODO Write code to read in map file
 		return new Map(filename);
 	}
 	// THREAD CLASSES
