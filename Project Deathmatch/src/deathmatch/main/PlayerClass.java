@@ -36,7 +36,6 @@ public class PlayerClass {
 	public int getSpeed() {
 		return speed;
 	}
-	
 	static PlayerClass loadPlayerClass(String filename) {
 		
 		PlayerClass playerClass = new PlayerClass();
@@ -52,10 +51,10 @@ public class PlayerClass {
 				sa[1] = sa[1].trim();
 				
 				if(sa[0].equals("type")) {
-					playerClass.classType = br.readLine().trim();
+					playerClass.classType = sa[1];
 				} else if(sa[0].equals("health")) {
 					playerClass.health = Integer.parseInt(sa[1]);
-					System.out.println(playerClass.health);
+					//System.out.println(playerClass.health);
 				} else if(sa[0].equals("energy")) {
 					playerClass.energy = Integer.parseInt(sa[1]);
 				} else if(sa[0].equals("armor")) {
