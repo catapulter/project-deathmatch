@@ -1,8 +1,10 @@
-=Look and Feel=
+=Art=
 
-==HUD==
+==Look and Feel==
 
-==Sprites==
+===HUD===
+
+===Sprites===
 
 ==References==
 [http://opengameart.org/content/consolidated-hard-vacuum-terrain-tilesets OGA - Hard Vacuum Terrain]
