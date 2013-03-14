@@ -62,9 +62,16 @@ public class Client
 	
 	// CONSTRUCTORS
 	
+	public Client(GraphicsDevice defaultScreen) {
+		this.graphicsDevice = defaultScreen;
+	}
+
 	public static void main(String[] args) {
 		
-		Client main = new Client();
+		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice defaultScreen = env.getDefaultScreenDevice();
+		
+		Client main = new Client(defaultScreen);
 		main.start();
 	}// main()
 	
@@ -75,12 +82,14 @@ public class Client
 	 */
 	public void start() {
 		
-		// Initialize variables
-		initialize();
+		// Load Player Classes
+		loadPlayerClasses();
 		
 		// Load configuration file
 		loadConfig("config.cfg");
 		
+		// Initialize variables
+		initialize();
 		
 		// start server receive thread
 		socket.connect(serverIP, serverPort);
@@ -195,6 +204,7 @@ public class Client
                 	sa = sa[1].split("x");
                 	screenWidth = Integer.parseInt(sa[0].trim());
                 	screenHeight = Integer.parseInt(sa[1].trim());
+                	System.out.println(screenWidth + " x " + screenHeight);
                 } else if(sa[0].trim().equals("name:class")) {
                 	sa = sa[1].split(":");
                 	sa[0] = sa[0].trim();
@@ -249,19 +259,27 @@ public class Client
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setUndecorated(true);
         frame.setIgnoreRepaint(true);
-        frame.setVisible(true);
-        graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        newDisplayMode = new DisplayMode(screenWidth, screenHeight, 32, 60);
+//        frame.setVisible(true);
+        frame.setResizable(!graphicsDevice.isFullScreenSupported());
+//        graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        
         if(graphicsDevice.isFullScreenSupported()) {
-            try {
+//            try {
                 graphicsDevice.setFullScreenWindow(frame);
-            }catch(Exception e){e.printStackTrace();}
+                canvas.validate();
+//            }catch(Exception e){e.printStackTrace();}
+        } else {
+        	frame.setVisible(true);
         }
 //        if(graphicsDevice.isDisplayChangeSupported()) {
 //            try {
 //                graphicsDevice.setDisplayMode(newDisplayMode);
 //            }catch(Exception e){e.printStackTrace();}
 //        }
+        
+        newDisplayMode = new DisplayMode(screenWidth, screenHeight, 32, 60);
+        graphicsDevice.setDisplayMode(newDisplayMode);
+        canvas.setSize(newDisplayMode.getWidth(), newDisplayMode.getHeight());
         
         // Add canvas to the frame and create buffer strategy
         frame.add(canvas);
@@ -275,12 +293,6 @@ public class Client
         canvas.addMouseMotionListener(this);
         canvas.addKeyListener(this);
         
-        
-        // Load PlayerClasses
-        archer = PlayerClass.loadPlayerClass("classes/archer.cls");
-        cleric = PlayerClass.loadPlayerClass("classes/cleric.cls");
-        mage = PlayerClass.loadPlayerClass("classes/mage.cls");
-        warrior = PlayerClass.loadPlayerClass("classes/warrior.cls");
 	}
 	
 	/* loadMap(String filename)
@@ -296,8 +308,10 @@ public class Client
 	 * 	Description - Loads the class file 'filename'
 	 */
 	private void loadPlayerClasses() {
-		
-		
+		archer = PlayerClass.loadPlayerClass("classes/archer.cls");
+        cleric = PlayerClass.loadPlayerClass("classes/cleric.cls");
+        mage = PlayerClass.loadPlayerClass("classes/mage.cls");
+        warrior = PlayerClass.loadPlayerClass("classes/warrior.cls");
 	}
 	
 	// THREAD CLASSES
